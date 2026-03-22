@@ -28,6 +28,7 @@
             <a class="navbar-brand" href="{{ route('admin.dashboard') }}">RSVP Admin</a>
             <div class="navbar-nav ms-auto flex-row flex-wrap gap-2 align-items-center">
                 <a class="nav-link text-white-50 small py-2" href="{{ route('admin.rsvps.index') }}">All RSVPs</a>
+                <a class="nav-link text-white-50 small py-2" href="{{ route('admin.scanner.index') }}">Scanner</a>
                 <a class="nav-link text-white-50 small py-2" href="{{ route('admin.rsvp-title.edit') }}">RSVP TITLE</a>
                 <a class="nav-link text-white-50 small py-2" href="{{ route('admin.slider.index') }}">Slider</a>
                 @if (auth()->user()->canAccessSettings())

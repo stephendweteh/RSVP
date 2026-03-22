@@ -109,6 +109,9 @@ class MailTemplateRenderer
         $calendarHtml = EventCalendarService::calendarLinksSectionHtml();
         $calendarText = EventCalendarService::calendarLinksSectionText();
 
+        $checkInHtml = RsvpCheckInQrService::emailSectionHtml($rsvp);
+        $checkInText = RsvpCheckInQrService::emailSectionText($rsvp);
+
         return [
             'html' => [
                 'guest_name' => e($rsvp->name),
@@ -116,8 +119,8 @@ class MailTemplateRenderer
                 'attendance_summary' => $summary,
                 'table_number_section' => $tableSection,
                 'table_number_text' => $tableText,
+                'check_in_qr_section' => $checkInHtml,
                 'calendar_links_section' => $calendarHtml,
-                'calendar_links_text' => $calendarText,
             ],
             'text' => [
                 'guest_name' => $rsvp->name,
@@ -125,6 +128,8 @@ class MailTemplateRenderer
                 'attendance_summary' => $summary,
                 'table_number_section' => '',
                 'table_number_text' => $tableText,
+                'check_in_qr_section' => '',
+                'check_in_qr_text' => $checkInText,
                 'calendar_links_section' => '',
                 'calendar_links_text' => $calendarText,
             ],

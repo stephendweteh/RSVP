@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -46,7 +47,7 @@ class AdminRsvpController extends Controller
         return response()->streamDownload(function () use ($query): void {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'id', 'name', 'phone', 'email', 'guests_count', 'attendance', 'message', 'status', 'table_number', 'created_at',
+                'id', 'name', 'phone', 'email', 'guests_count', 'attendance', 'message', 'status', 'table_number', 'checked_in_at', 'created_at',
             ]);
             foreach ($query->cursor() as $rsvp) {
                 fputcsv($out, [
@@ -59,6 +60,7 @@ class AdminRsvpController extends Controller
                     $rsvp->message ?? '',
                     $rsvp->status,
                     $rsvp->table_number ?? '',
+                    $rsvp->checked_in_at?->toIso8601String() ?? '',
                     $rsvp->created_at?->toIso8601String() ?? '',
                 ]);
             }
@@ -104,6 +106,8 @@ class AdminRsvpController extends Controller
             $rsvp->update([
                 'status' => Rsvp::STATUS_APPROVED,
                 'table_number' => $nextTable,
+                'check_in_token' => Str::random(40),
+                'checked_in_at' => null,
             ]);
 
             return ['kind' => 'approved', 'rsvp' => $rsvp->fresh(), 'table' => $nextTable];
@@ -131,6 +135,8 @@ class AdminRsvpController extends Controller
             $rsvp->update([
                 'status' => Rsvp::STATUS_REJECTED,
                 'table_number' => null,
+                'check_in_token' => null,
+                'checked_in_at' => null,
             ]);
 
             return $rsvp->fresh();

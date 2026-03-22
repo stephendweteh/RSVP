@@ -4,9 +4,11 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminMailTemplateController;
 use App\Http\Controllers\AdminRsvpController;
 use App\Http\Controllers\AdminRsvpTitleController;
+use App\Http\Controllers\AdminScannerController;
 use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\AdminSliderController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\RsvpAdmissionController;
 use App\Http\Controllers\RsvpCalendarController;
 use App\Http\Controllers\RsvpController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +20,7 @@ Route::post('/rsvp', [RsvpController::class, 'store'])
     ->middleware('throttle:20,1')
     ->name('rsvp.store');
 Route::get('/rsvp/calendar/event.ics', RsvpCalendarController::class)->name('rsvp.calendar.ics');
+Route::get('/rsvp/admission/{token}', [RsvpAdmissionController::class, 'show'])->name('rsvp.admission.show');
 
 Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware('guest')->group(function (): void {
@@ -28,6 +31,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware(['auth', 'admin'])->group(function (): void {
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/scanner', [AdminScannerController::class, 'index'])->name('scanner.index');
+        Route::post('/scanner/admit', [AdminScannerController::class, 'admit'])->name('scanner.admit');
 
         Route::middleware('administrator')->group(function (): void {
             Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings.edit');

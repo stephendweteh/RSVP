@@ -89,7 +89,7 @@ TEXT,
             [
                 'slug' => 'rsvp_decision_guest_approved',
                 'name' => 'Guest — RSVP approved',
-                'description' => 'Placeholders: {{guest_name}}, {{guests_count}}, {{attendance_summary}}, {{table_number_section}}, {{table_number_text}}, {{calendar_links_section}} (HTML “Add to calendar” when configured in Settings), {{calendar_links_text}} (plain URLs)',
+                'description' => 'Placeholders: {{guest_name}}, {{guests_count}}, {{attendance_summary}}, {{table_number_section}}, {{table_number_text}}, {{check_in_qr_section}} (HTML QR + check-in block), {{check_in_qr_text}} (plain check-in URL), {{calendar_links_section}} (HTML “Add to calendar” when configured in Settings), {{calendar_links_text}} (plain URLs)',
                 'subject' => 'Your RSVP has been approved',
                 'body_html' => <<<'HTML'
 <!DOCTYPE html>
@@ -101,6 +101,7 @@ TEXT,
     <p>Hi {{guest_name}},</p>
     <p>Your RSVP has been <strong>approved</strong>. We look forward to celebrating with you.</p>
     {{table_number_section}}
+    {{check_in_qr_section}}
     {{calendar_links_section}}
     <p style="color:#666;font-size:14px;">Summary: {{attendance_summary}}</p>
 </body>
@@ -110,7 +111,7 @@ HTML,
 Hi {{guest_name}},
 
 Your RSVP has been approved. We look forward to celebrating with you.
-{{table_number_text}}
+{{table_number_text}}{{check_in_qr_text}}
 {{calendar_links_text}}
 Summary: {{attendance_summary}}
 TEXT,

@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
     'message',
     'status',
     'table_number',
+    'check_in_token',
+    'checked_in_at',
 ])]
 class Rsvp extends Model
 {
@@ -34,6 +36,13 @@ class Rsvp extends Model
     public static function isFullyBooked(): bool
     {
         return static::approvedCount() >= self::APPROVED_CAPACITY;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'checked_in_at' => 'datetime',
+        ];
     }
 
     protected static function booted(): void

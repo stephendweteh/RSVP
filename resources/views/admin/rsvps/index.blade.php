@@ -27,6 +27,7 @@
                     <th>Attendance</th>
                     <th>Status</th>
                     <th class="text-center">Table</th>
+                    <th class="text-center">Admitted</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -48,6 +49,15 @@
                             @endif
                         </td>
                         <td class="text-center">{{ $rsvp->table_number ?? '—' }}</td>
+                        <td class="text-center">
+                            @if ($rsvp->status === 'approved' && $rsvp->checked_in_at)
+                                <span class="badge text-bg-info" title="{{ $rsvp->checked_in_at->format('M j, Y g:i A') }}">Yes</span>
+                            @elseif ($rsvp->status === 'approved')
+                                <span class="text-muted">—</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td class="text-end text-nowrap">
                             @if ($rsvp->status === 'pending')
                                 <form action="{{ route('admin.rsvps.approve', $rsvp->id) }}" method="post" class="d-inline">
@@ -73,12 +83,12 @@
                     </tr>
                     @if ($rsvp->message)
                         <tr class="border-top-0">
-                            <td colspan="8" class="pt-0 text-muted fst-italic small">{{ $rsvp->message }}</td>
+                            <td colspan="9" class="pt-0 text-muted fst-italic small">{{ $rsvp->message }}</td>
                         </tr>
                     @endif
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-5">No RSVPs match this filter.</td>
+                        <td colspan="9" class="text-center text-muted py-5">No RSVPs match this filter.</td>
                     </tr>
                 @endforelse
             </tbody>
