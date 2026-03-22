@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Mail\RsvpDecisionAdminMail;
 use App\Mail\RsvpDecisionMail;
 use App\Models\Rsvp;
-use App\Models\Setting;
+use App\Services\AdminNotificationRecipients;
+use App\Services\RsvpSmsNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\RsvpSmsNotifier;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -149,8 +149,7 @@ class AdminRsvpController extends Controller
 
         RsvpSmsNotifier::guestDecision($rsvp, $decision);
 
-        $adminEmail = trim(Setting::get('admin_notification_email'));
-        if (filled($adminEmail)) {
+        foreach (AdminNotificationRecipients::notificationEmails() as $adminEmail) {
             Mail::to($adminEmail)->send(new RsvpDecisionAdminMail($rsvp, $decision));
         }
 

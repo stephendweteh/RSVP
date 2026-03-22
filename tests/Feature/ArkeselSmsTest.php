@@ -17,10 +17,7 @@ class ArkeselSmsTest extends TestCase
 
     private function makeAdmin(): User
     {
-        $user = User::factory()->create(['email' => 'admin@example.com']);
-        $user->forceFill(['is_admin' => true])->save();
-
-        return $user->fresh();
+        return User::factory()->administrator()->create(['email' => 'admin@example.com']);
     }
 
     public function test_admin_can_save_sms_settings(): void

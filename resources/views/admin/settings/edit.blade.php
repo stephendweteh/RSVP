@@ -73,9 +73,12 @@
                         </div>
 
                         <h3 class="h6 text-uppercase text-muted mb-3">Admin notifications</h3>
-                        <p class="small text-muted mb-3">Optional. When set, this address receives a copy when a guest submits an RSVP and when an RSVP is approved or rejected (in addition to the emails sent to the guest).</p>
+                        <p class="small text-muted mb-3">
+                            <strong>Every administrator</strong> receives these copies at their account email (see <a href="{{ route('admin.users.index') }}">Users</a>).
+                            Optionally add another address below to include someone who is not an admin user.
+                        </p>
                         <div class="mb-4">
-                            <label for="admin_notification_email" class="form-label">Admin notification email</label>
+                            <label for="admin_notification_email" class="form-label">Extra notification email <span class="text-muted">(optional)</span></label>
                             <input type="email" class="form-control @error('admin_notification_email') is-invalid @enderror" id="admin_notification_email" name="admin_notification_email" value="{{ old('admin_notification_email', \App\Models\Setting::get('admin_notification_email')) }}" placeholder="you@example.com">
                             @error('admin_notification_email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -178,9 +181,12 @@
                         </div>
 
                         <h3 class="h6 text-uppercase text-muted mb-3">Admin SMS</h3>
-                        <p class="small text-muted mb-3">Optional. Same country-code rules as guest numbers.</p>
+                        <p class="small text-muted mb-3">
+                            SMS goes to <strong>each administrator’s phone</strong> when set on their user profile (edit user under <a href="{{ route('admin.users.index') }}">Users</a>). Same country-code rules as guest numbers.
+                            Optionally add another number below (e.g. shared line).
+                        </p>
                         <div class="mb-3">
-                            <label for="admin_notification_phone_sms" class="form-label">Admin notification phone</label>
+                            <label for="admin_notification_phone_sms" class="form-label">Extra notification phone <span class="text-muted">(optional)</span></label>
                             <input type="text" class="form-control @error('admin_notification_phone') is-invalid @enderror" id="admin_notification_phone_sms" name="admin_notification_phone" value="{{ old('admin_notification_phone', \App\Models\Setting::get('admin_notification_phone')) }}" maxlength="30" placeholder="e.g. 0550123456" autocomplete="tel">
                             @error('admin_notification_phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

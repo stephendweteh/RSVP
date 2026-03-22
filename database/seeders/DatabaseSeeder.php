@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make($password),
             ],
         );
-        $user->forceFill(['is_admin' => true])->save();
+        $user->forceFill([
+            'is_admin' => true,
+            'admin_role' => User::ADMIN_ROLE_ADMIN,
+        ])->save();
     }
 }

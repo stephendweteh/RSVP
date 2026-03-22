@@ -30,8 +30,12 @@
                 <a class="nav-link text-white-50 small py-2" href="{{ route('admin.rsvps.index') }}">All RSVPs</a>
                 <a class="nav-link text-white-50 small py-2" href="{{ route('admin.rsvp-title.edit') }}">RSVP TITLE</a>
                 <a class="nav-link text-white-50 small py-2" href="{{ route('admin.slider.index') }}">Slider</a>
-                <a class="nav-link text-white-50 small py-2" href="{{ route('admin.settings.edit') }}">Settings</a>
-                <a class="nav-link text-white-50 small py-2" href="{{ route('admin.users.index') }}">Users</a>
+                @if (auth()->user()->canAccessSettings())
+                    <a class="nav-link text-white-50 small py-2" href="{{ route('admin.settings.edit') }}">Settings</a>
+                @endif
+                @if (auth()->user()->isAdministrator())
+                    <a class="nav-link text-white-50 small py-2" href="{{ route('admin.users.index') }}">Users</a>
+                @endif
                 @auth
                     <div class="vr text-white-50 d-none d-md-block align-self-stretch my-2 opacity-50"></div>
                     <a href="{{ route('admin.users.show', auth()->user()) }}" class="d-flex align-items-center gap-2 text-decoration-none rounded-pill px-2 py-1 nav-account-link" title="Your profile">

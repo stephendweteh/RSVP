@@ -15,12 +15,9 @@ class AdminRsvpTest extends TestCase
 
     private function makeAdmin(): User
     {
-        $user = User::factory()->create([
+        return User::factory()->administrator()->create([
             'email' => 'admin@example.com',
         ]);
-        $user->forceFill(['is_admin' => true])->save();
-
-        return $user->fresh();
     }
 
     private function makeRsvp(array $overrides = []): Rsvp

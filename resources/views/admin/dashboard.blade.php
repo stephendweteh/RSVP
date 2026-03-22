@@ -38,6 +38,8 @@
     </div>
     <p class="text-muted small text-center mt-3 mb-0">
         Guest form: <a href="{{ route('rsvp.index') }}" target="_blank" rel="noopener">{{ url('/rsvp') }}</a>
-        · <a href="{{ route('admin.settings.edit') }}">Settings</a> for email &amp; notifications
+        @if (auth()->user()->canAccessSettings())
+            · <a href="{{ route('admin.settings.edit') }}">Settings</a> for email &amp; notifications
+        @endif
     </p>
 @endsection

@@ -29,6 +29,11 @@
     @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>
 <div class="mb-3">
+    <label for="phone" class="form-label">Phone <span class="text-muted small">(optional — for admin SMS alerts)</span></label>
+    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone ?? '') }}" maxlength="30" autocomplete="tel" placeholder="e.g. 0550123456">
+    @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+</div>
+<div class="mb-3">
     <label for="password" class="form-label">Password @if($editing)<span class="text-muted small">(leave blank to keep current)</span>@endif</label>
     <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" autocomplete="new-password" @if(! $editing) required @endif>
     @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -37,8 +42,29 @@
     <label for="password_confirmation" class="form-label">Confirm password</label>
     <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" autocomplete="new-password" @if(! $editing) required @endif>
 </div>
-<div class="form-check mb-3">
-    <input type="checkbox" class="form-check-input @error('is_admin') is-invalid @enderror" id="is_admin" name="is_admin" value="1" @checked(old('is_admin', $editing && $user->is_admin))>
-    <label class="form-check-label" for="is_admin">Administrator (can access this dashboard)</label>
-    @error('is_admin')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-</div>
+@php
+    $staffRole = old('staff_role', $editing
+        ? ($user->is_admin ? ($user->isManager() ? 'manager' : 'administrator') : 'user')
+        : 'user');
+    $canEditRoles = auth()->user()->isAdministrator();
+@endphp
+@if ($canEditRoles)
+    <div class="mb-3">
+        <label for="staff_role" class="form-label">Dashboard access</label>
+        <select class="form-select @error('staff_role') is-invalid @enderror" id="staff_role" name="staff_role">
+            <option value="user" @selected($staffRole === 'user')>User (no dashboard)</option>
+            <option value="manager" @selected($staffRole === 'manager')>Manager</option>
+            <option value="administrator" @selected($staffRole === 'administrator')>Administrator</option>
+        </select>
+        @error('staff_role')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <div class="form-text">Managers can use RSVPs, slider, and users, but not Settings.</div>
+    </div>
+@else
+    <p class="small text-muted mb-3">
+        @if ($editing)
+            Dashboard access: <strong>{{ $user->staffRoleLabel() }}</strong>. Only an administrator can change roles.
+        @else
+            New accounts are created as <strong>User</strong> (no dashboard). Only an administrator can assign Manager or Administrator.
+        @endif
+    </p>
+@endif

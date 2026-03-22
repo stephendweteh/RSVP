@@ -14,10 +14,7 @@ class AdminUserCrudTest extends TestCase
 
     private function admin(): User
     {
-        $user = User::factory()->create();
-        $user->forceFill(['is_admin' => true])->save();
-
-        return $user->fresh();
+        return User::factory()->administrator()->create();
     }
 
     public function test_admin_can_list_users(): void
@@ -37,26 +34,26 @@ class AdminUserCrudTest extends TestCase
             'email' => 'new@example.com',
             'password' => 'SecurePass1!',
             'password_confirmation' => 'SecurePass1!',
-            'is_admin' => '1',
+            'staff_role' => 'administrator',
         ])->assertRedirect(route('admin.users.index'));
 
         $this->assertDatabaseHas('users', [
             'name' => 'New Person',
             'email' => 'new@example.com',
         ]);
-        $this->assertTrue(User::query()->where('email', 'new@example.com')->first()->is_admin);
+        $created = User::query()->where('email', 'new@example.com')->first();
+        $this->assertTrue($created->isAdministrator());
     }
 
     public function test_admin_can_update_user(): void
     {
         $admin = $this->admin();
-        $other = User::factory()->create(['name' => 'Other', 'email' => 'other@example.com']);
-        $other->forceFill(['is_admin' => true])->save();
+        $other = User::factory()->administrator()->create(['name' => 'Other', 'email' => 'other@example.com']);
 
         $this->actingAs($admin)->put(route('admin.users.update', $other), [
             'name' => 'Renamed',
             'email' => 'renamed@example.com',
-            'is_admin' => '1',
+            'staff_role' => 'administrator',
         ])->assertRedirect(route('admin.users.show', $other));
 
         $this->assertDatabaseHas('users', [
@@ -77,11 +74,10 @@ class AdminUserCrudTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $admin->id]);
     }
 
-    public function test_can_delete_non_last_admin_when_two_admins_exist(): void
+    public function test_can_delete_non_last_admin_when_two_administrators_exist(): void
     {
         $admin = $this->admin();
-        $other = User::factory()->create(['email' => 'second@example.com']);
-        $other->forceFill(['is_admin' => true])->save();
+        $other = User::factory()->administrator()->create(['email' => 'second@example.com']);
 
         $this->actingAs($admin)->delete(route('admin.users.destroy', $other))
             ->assertRedirect(route('admin.users.index'));
@@ -101,11 +97,27 @@ class AdminUserCrudTest extends TestCase
             'email' => 'photo@example.com',
             'password' => 'SecurePass1!',
             'password_confirmation' => 'SecurePass1!',
+            'staff_role' => 'user',
             'avatar' => $file,
         ])->assertRedirect(route('admin.users.index'));
 
         $user = User::query()->where('email', 'photo@example.com')->first();
         $this->assertNotNull($user->avatar_path);
         Storage::disk('public')->assertExists($user->avatar_path);
+    }
+
+    public function test_manager_cannot_create_users(): void
+    {
+        $manager = User::factory()->manager()->create();
+
+        $this->actingAs($manager)->post(route('admin.users.store'), [
+            'name' => 'Regular',
+            'email' => 'regular@example.com',
+            'password' => 'SecurePass1!',
+            'password_confirmation' => 'SecurePass1!',
+            'staff_role' => 'administrator',
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('users', ['email' => 'regular@example.com']);
     }
 }

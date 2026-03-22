@@ -13,8 +13,10 @@
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-primary rounded-pill px-4">Edit</a>
-            <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary rounded-pill px-4">All users</a>
-            @if ($user->id !== auth()->id())
+            @if (auth()->user()->isAdministrator())
+                <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary rounded-pill px-4">All users</a>
+            @endif
+            @if (auth()->user()->isAdministrator() && $user->id !== auth()->id())
                 <form action="{{ route('admin.users.destroy', $user) }}" method="post" onsubmit="return confirm('Delete this user permanently?');">
                     @csrf
                     @method('DELETE')
@@ -26,10 +28,18 @@
     <div class="card border-0 shadow-sm" style="max-width: 28rem;">
         <div class="card-body">
             <dl class="row small mb-0">
+                @if (filled($user->phone))
+                    <dt class="col-sm-4 text-muted">Phone</dt>
+                    <dd class="col-sm-8">{{ $user->phone }}</dd>
+                @endif
                 <dt class="col-sm-4 text-muted">Role</dt>
                 <dd class="col-sm-8">
                     @if ($user->is_admin)
-                        <span class="badge text-bg-primary">Administrator</span>
+                        @if ($user->isManager())
+                            <span class="badge text-bg-info">Manager</span>
+                        @else
+                            <span class="badge text-bg-primary">Administrator</span>
+                        @endif
                     @else
                         <span class="badge text-bg-secondary">User</span>
                     @endif

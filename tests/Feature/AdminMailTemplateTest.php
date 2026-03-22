@@ -14,12 +14,9 @@ class AdminMailTemplateTest extends TestCase
 
     private function makeAdmin(): User
     {
-        $user = User::factory()->create([
+        return User::factory()->administrator()->create([
             'email' => 'admin@example.com',
         ]);
-        $user->forceFill(['is_admin' => true])->save();
-
-        return $user->fresh();
     }
 
     public function test_settings_lists_email_templates(): void

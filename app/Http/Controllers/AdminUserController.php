@@ -29,17 +29,22 @@ class AdminUserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'is_admin' => ['sometimes', 'boolean'],
+            'staff_role' => ['nullable', 'in:user,manager,administrator'],
             'avatar' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        $staff = $this->resolveStaffAttributes($request, null);
 
         $user = User::query()->create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'phone' => self::nullablePhone($validated['phone'] ?? null),
             'password' => $validated['password'],
+            'is_admin' => $staff['is_admin'],
+            'admin_role' => $staff['admin_role'],
         ]);
-        $user->forceFill(['is_admin' => $request->boolean('is_admin')])->save();
 
         if ($request->hasFile('avatar')) {
             $user->forceFill([
@@ -67,18 +72,21 @@ class AdminUserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:30'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
-            'is_admin' => ['sometimes', 'boolean'],
+            'staff_role' => ['nullable', 'in:user,manager,administrator'],
             'avatar' => ['nullable', 'image', 'max:2048'],
             'remove_avatar' => ['sometimes', 'boolean'],
         ]);
 
-        $willBeAdmin = $request->boolean('is_admin');
+        $staff = $this->resolveStaffAttributes($request, $user);
 
-        if ($user->is_admin && ! $willBeAdmin && $this->adminCountExcluding($user->id) === 0) {
-            return back()
-                ->withInput()
-                ->withErrors(['is_admin' => 'You cannot remove admin access from the only administrator.']);
+        if ($user->isAdministrator() && ! $this->wouldBeAdministrator($staff)) {
+            if (User::countAdministratorsExcluding($user->id) === 0) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['staff_role' => 'You cannot remove or demote the only administrator.']);
+            }
         }
 
         if ($request->boolean('remove_avatar')) {
@@ -94,6 +102,9 @@ class AdminUserController extends Controller
         $user->fill([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'phone' => self::nullablePhone($validated['phone'] ?? null),
+            'is_admin' => $staff['is_admin'],
+            'admin_role' => $staff['admin_role'],
         ]);
 
         if (! empty($validated['password'])) {
@@ -101,7 +112,6 @@ class AdminUserController extends Controller
         }
 
         $user->save();
-        $user->forceFill(['is_admin' => $willBeAdmin])->save();
 
         return redirect()
             ->route('admin.users.show', $user)
@@ -110,7 +120,7 @@ class AdminUserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
-        if ($user->is_admin && User::query()->where('is_admin', true)->count() <= 1) {
+        if ($user->isAdministrator() && User::countAdministratorsExcluding($user->id) === 0) {
             return redirect()
                 ->route('admin.users.index')
                 ->withErrors(['delete' => 'You cannot delete the only administrator.']);
@@ -130,9 +140,57 @@ class AdminUserController extends Controller
             ->with('success', 'User deleted.');
     }
 
-    private function adminCountExcluding(int $userId): int
+    /**
+     * @return array{is_admin: bool, admin_role: string|null}
+     */
+    private function resolveStaffAttributes(Request $request, ?User $existing): array
     {
-        return User::query()->where('is_admin', true)->where('id', '!=', $userId)->count();
+        $actor = auth()->user();
+        if (! $actor instanceof User || ! $actor->isAdministrator()) {
+            if ($existing === null) {
+                return ['is_admin' => false, 'admin_role' => null];
+            }
+
+            return [
+                'is_admin' => (bool) $existing->is_admin,
+                'admin_role' => $existing->admin_role,
+            ];
+        }
+
+        $role = $request->input('staff_role');
+        if ($role === null && $existing !== null) {
+            $role = $existing->is_admin
+                ? ($existing->isManager() ? 'manager' : 'administrator')
+                : 'user';
+        }
+        $role ??= 'user';
+
+        return match ($role) {
+            'manager' => ['is_admin' => true, 'admin_role' => User::ADMIN_ROLE_MANAGER],
+            'administrator' => ['is_admin' => true, 'admin_role' => User::ADMIN_ROLE_ADMIN],
+            default => ['is_admin' => false, 'admin_role' => null],
+        };
+    }
+
+    /**
+     * @param  array{is_admin: bool, admin_role: string|null}  $staff
+     */
+    private function wouldBeAdministrator(array $staff): bool
+    {
+        if (! $staff['is_admin']) {
+            return false;
+        }
+
+        $role = $staff['admin_role'];
+
+        return $role === null || $role === User::ADMIN_ROLE_ADMIN;
+    }
+
+    private static function nullablePhone(mixed $value): ?string
+    {
+        $p = trim((string) ($value ?? ''));
+
+        return $p !== '' ? $p : null;
     }
 
     private function deleteStoredAvatar(User $user): void

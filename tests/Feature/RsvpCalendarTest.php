@@ -35,10 +35,9 @@ class RsvpCalendarTest extends TestCase
 
     public function test_admin_can_save_calendar_settings(): void
     {
-        $user = User::factory()->create();
-        $user->forceFill(['is_admin' => true])->save();
+        $user = User::factory()->administrator()->create();
 
-        $this->actingAs($user->fresh())
+        $this->actingAs($user)
             ->put(route('admin.settings.calendar.update'), [
                 'calendar_event_enabled' => '1',
                 'calendar_event_title' => 'Big Day',

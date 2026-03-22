@@ -10,10 +10,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'password', 'is_admin', 'admin_role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    public const ADMIN_ROLE_ADMIN = 'admin';
+
+    public const ADMIN_ROLE_MANAGER = 'manager';
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -28,7 +32,47 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'admin_role' => 'string',
         ];
+    }
+
+    public function isAdministrator(): bool
+    {
+        if (! $this->is_admin) {
+            return false;
+        }
+
+        return $this->admin_role === null || $this->admin_role === self::ADMIN_ROLE_ADMIN;
+    }
+
+    public function isManager(): bool
+    {
+        return (bool) $this->is_admin && $this->admin_role === self::ADMIN_ROLE_MANAGER;
+    }
+
+    public function canAccessSettings(): bool
+    {
+        return $this->isAdministrator();
+    }
+
+    public function staffRoleLabel(): string
+    {
+        if (! $this->is_admin) {
+            return 'User';
+        }
+
+        return $this->isManager() ? 'Manager' : 'Administrator';
+    }
+
+    public static function countAdministratorsExcluding(int $exceptUserId): int
+    {
+        return static::query()
+            ->where('is_admin', true)
+            ->where('id', '!=', $exceptUserId)
+            ->where(function ($q) {
+                $q->whereNull('admin_role')->orWhere('admin_role', self::ADMIN_ROLE_ADMIN);
+            })
+            ->count();
     }
 
     /**

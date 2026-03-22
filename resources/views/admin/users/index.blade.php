@@ -27,7 +27,11 @@
                         <td>{{ $user->email }}</td>
                         <td>
                             @if ($user->is_admin)
-                                <span class="badge text-bg-primary">Admin</span>
+                                @if ($user->isManager())
+                                    <span class="badge text-bg-info">Manager</span>
+                                @else
+                                    <span class="badge text-bg-primary">Administrator</span>
+                                @endif
                             @else
                                 <span class="badge text-bg-secondary">User</span>
                             @endif

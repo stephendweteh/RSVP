@@ -7,6 +7,7 @@ use App\Mail\RsvpSubmittedMail;
 use App\Models\Rsvp;
 use App\Models\Setting;
 use App\Models\SliderImage;
+use App\Services\AdminNotificationRecipients;
 use App\Services\RsvpSmsNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,8 +51,7 @@ class RsvpController extends Controller
 
         Mail::to($rsvp->email)->send(new RsvpSubmittedMail($rsvp));
 
-        $adminEmail = trim(Setting::get('admin_notification_email'));
-        if (filled($adminEmail)) {
+        foreach (AdminNotificationRecipients::notificationEmails() as $adminEmail) {
             Mail::to($adminEmail)->send(new RsvpSubmittedAdminMail($rsvp));
         }
 

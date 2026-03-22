@@ -81,16 +81,6 @@ class RsvpSmsNotifier
             return;
         }
 
-        $adminPhone = trim(Setting::get('admin_notification_phone'));
-        if ($adminPhone === '') {
-            return;
-        }
-
-        $to = ArkeselSmsService::normalizeRecipient($adminPhone, Setting::get('sms_country_code', '233'));
-        if ($to === null) {
-            return;
-        }
-
         $msg = self::resolveMessage(
             self::SETTING_BODY_SUBMITTED_ADMIN,
             MailTemplate::SLUG_RSVP_SUBMITTED_ADMIN,
@@ -101,22 +91,14 @@ class RsvpSmsNotifier
             return;
         }
 
-        ArkeselSmsService::send($to, $msg);
+        foreach (AdminNotificationRecipients::normalizedAdminSmsPhones() as $to) {
+            ArkeselSmsService::send($to, $msg);
+        }
     }
 
     public static function adminDecision(Rsvp $rsvp, string $decision): void
     {
         if (Setting::get('sms_admin_on_decision') !== '1') {
-            return;
-        }
-
-        $adminPhone = trim(Setting::get('admin_notification_phone'));
-        if ($adminPhone === '') {
-            return;
-        }
-
-        $to = ArkeselSmsService::normalizeRecipient($adminPhone, Setting::get('sms_country_code', '233'));
-        if ($to === null) {
             return;
         }
 
@@ -130,7 +112,9 @@ class RsvpSmsNotifier
             return;
         }
 
-        ArkeselSmsService::send($to, $msg);
+        foreach (AdminNotificationRecipients::normalizedAdminSmsPhones() as $to) {
+            ArkeselSmsService::send($to, $msg);
+        }
     }
 
     /**
