@@ -92,7 +92,7 @@ class MailTemplateRenderer
     }
 
     /**
-     * @return array{html: array<string, string>, text: array<string, string>}
+     * @return array{html: array<string, string>, text: array<string, string>, check_in_qr_png: ?string}
      */
     public static function varsForDecisionGuestApproved(Rsvp $rsvp): array
     {
@@ -109,7 +109,7 @@ class MailTemplateRenderer
         $calendarHtml = EventCalendarService::calendarLinksSectionHtml();
         $calendarText = EventCalendarService::calendarLinksSectionText();
 
-        $checkInHtml = RsvpCheckInQrService::emailSectionHtml($rsvp);
+        $checkIn = RsvpCheckInQrService::checkInEmailData($rsvp);
         $checkInText = RsvpCheckInQrService::emailSectionText($rsvp);
 
         return [
@@ -119,7 +119,7 @@ class MailTemplateRenderer
                 'attendance_summary' => $summary,
                 'table_number_section' => $tableSection,
                 'table_number_text' => $tableText,
-                'check_in_qr_section' => $checkInHtml,
+                'check_in_qr_section' => $checkIn['section_html'],
                 'calendar_links_section' => $calendarHtml,
             ],
             'text' => [
@@ -133,6 +133,7 @@ class MailTemplateRenderer
                 'calendar_links_section' => '',
                 'calendar_links_text' => $calendarText,
             ],
+            'check_in_qr_png' => $checkIn['png'],
         ];
     }
 

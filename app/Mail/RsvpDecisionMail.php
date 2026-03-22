@@ -18,6 +18,8 @@ class RsvpDecisionMail extends Mailable
     /** @var array{subject: string, html: string, text: string}|null */
     private ?array $renderedCache = null;
 
+    private ?string $checkInQrPng = null;
+
     public function __construct(
         public Rsvp $rsvp,
         public string $decision,
@@ -40,6 +42,7 @@ class RsvpDecisionMail extends Mailable
             with: [
                 'body_html' => $rendered['html'],
                 'body_text' => $rendered['text'],
+                'check_in_qr_png' => $this->checkInQrPng,
             ],
         );
     }
@@ -53,9 +56,14 @@ class RsvpDecisionMail extends Mailable
             $slug = $this->decision === Rsvp::STATUS_APPROVED
                 ? MailTemplate::SLUG_RSVP_DECISION_GUEST_APPROVED
                 : MailTemplate::SLUG_RSVP_DECISION_GUEST_REJECTED;
-            $vars = $this->decision === Rsvp::STATUS_APPROVED
-                ? MailTemplateRenderer::varsForDecisionGuestApproved($this->rsvp)
-                : MailTemplateRenderer::varsForDecisionGuestRejected($this->rsvp);
+            if ($this->decision === Rsvp::STATUS_APPROVED) {
+                $vars = MailTemplateRenderer::varsForDecisionGuestApproved($this->rsvp);
+                $this->checkInQrPng = $vars['check_in_qr_png'] ?? null;
+                unset($vars['check_in_qr_png']);
+            } else {
+                $this->checkInQrPng = null;
+                $vars = MailTemplateRenderer::varsForDecisionGuestRejected($this->rsvp);
+            }
 
             return MailTemplateRenderer::render(
                 MailTemplate::query()->where('slug', $slug)->firstOrFail(),
