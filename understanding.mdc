@@ -1,0 +1,244 @@
+---
+# Wedding RSVP System – Understanding Document (understanding.mdc)
+
+## 1. Project Overview
+
+This project is a **Wedding RSVP Management System** built with:
+
+* **Backend:** Laravel (PHP 8.4)
+* **Database:** MySQL
+* **Frontend:** HTML /CSS Boostrap Mobile Template 
+
+The system allows invited guests to confirm attendance (RSVP), while giving the admin full control to **approve or reject submissions**.
+
+---
+
+## 2. Core Objectives
+
+* Allow guests to submit RSVP via mobile-friendly interface
+* Store all RSVPs in database
+* Keep all RSVPs in **PENDING state by default**
+* Admin must review and approve/reject RSVPs
+* Provide clean UI using provided HTML template
+
+---
+
+## 3. System Roles
+
+### 3.1 Guest (Public User)
+
+* Access RSVP page
+* Fill RSVP form
+* Submit attendance details
+* Receive confirmation message (pending approval)
+
+### 3.2 Admin
+
+* Login to admin dashboard
+* View all RSVPs
+* Approve or reject RSVP
+* Manage guest list
+
+---
+
+## 4. Functional Modules
+
+### 4.1 RSVP Submission Module
+
+**Features:**
+
+* Guest Name
+* Phone Number
+* Email (optional)
+* Number of Guests
+* Attendance Status (Attending / Not Attending)
+* Message (optional)
+
+**Flow:**
+
+1. Guest opens RSVP page
+2. Fills form
+3. Clicks submit
+4. Data saved with status = `pending`
+5. Show success message: "Your RSVP is awaiting approval"
+
+---
+
+### 4.2 Admin Dashboard Module
+
+**Features:**
+
+* View all RSVPs
+* Filter by status (Pending, Approved, Rejected)
+* Approve RSVP
+* Reject RSVP
+
+**Actions:**
+
+* Approve → status = `approved`
+* Reject → status = `rejected`
+
+---
+
+### 4.3 Notification Module (Optional but Recommended)
+
+* Email notification after submission
+* Email/SMS after approval or rejection
+
+---
+
+## 5. Database Design
+
+### Table: rsvps
+
+| Field        | Type      | Description                   |
+| ------------ | --------- | ----------------------------- |
+| id           | BIGINT    | Primary Key                   |
+| name         | VARCHAR   | Guest Name                    |
+| phone        | VARCHAR   | Phone Number                  |
+| email        | VARCHAR   | Email                         |
+| guests_count | INT       | Number of attendees           |
+| attendance   | ENUM      | attending / not_attending     |
+| message      | TEXT      | Optional note                 |
+| status       | ENUM      | pending / approved / rejected |
+| created_at   | TIMESTAMP | Created time                  |
+| updated_at   | TIMESTAMP | Updated time                  |
+
+---
+
+## 6. System Flow
+
+### Guest Flow
+
+1. Open RSVP page
+2. Fill form
+3. Submit
+4. Save to DB with `pending`
+5. Display success message
+
+### Admin Flow
+
+1. Login
+2. View pending RSVPs
+3. Approve or reject
+4. System updates status
+
+---
+
+## 7. Routes Structure (Laravel)
+
+### Web Routes
+
+```
+GET  /rsvp           -> Show RSVP form
+POST /rsvp           -> Submit RSVP
+
+GET  /admin/login    -> Admin login page
+POST /admin/login    -> Authenticate admin
+
+GET  /admin/dashboard -> Dashboard
+GET  /admin/rsvps     -> List RSVPs
+POST /admin/rsvps/{id}/approve -> Approve RSVP
+POST /admin/rsvps/{id}/reject  -> Reject RSVP
+```
+
+---
+
+## 8. Controllers
+
+### RSVPController
+
+* index() → Show form
+* store() → Save RSVP (default status: pending)
+
+### AdminController
+
+* login()
+* dashboard()
+
+### AdminRSVPController
+
+* index() → List RSVPs
+* approve($id)
+* reject($id)
+
+---
+
+## 9. Models
+
+### RSVP Model
+
+* Fillable fields:
+
+```
+name, phone, email, guests_count, attendance, message, status
+```
+
+---
+
+## 10. Validation Rules
+
+* name → required
+* phone → required
+* guests_count → required | integer
+* attendance → required
+
+---
+
+## 11. Frontend Integration
+
+Use the provided **HTML mobile template**:
+
+### Tasks:
+
+* Convert HTML to Blade (`.blade.php`)
+* Connect form action to `/rsvp`
+* Display validation errors
+* Show success message
+
+---
+
+## 12. Security Considerations
+
+* CSRF protection (Laravel default)
+* Admin authentication (middleware)
+* Input validation
+
+---
+
+## 13. Future Enhancements
+
+* QR Code RSVP access
+* Unique invitation codes
+* Table/seat assignment
+* Export RSVPs to Excel
+* WhatsApp/SMS integration
+
+---
+
+## 14. Summary
+
+This system ensures:
+
+* Clean RSVP experience for guests
+* Full admin control over attendance
+* Organized and trackable guest management
+
+**Key Rule:**
+
+> All RSVPs MUST remain in `PENDING` until explicitly approved by admin.
+
+---
+
+## 15. Deployment Notes
+
+* Configure `.env` for MySQL
+* Run migrations
+* Upload HTML template assets
+* Ensure storage & cache permissions
+
+---
+
+End of Document
+
+---
