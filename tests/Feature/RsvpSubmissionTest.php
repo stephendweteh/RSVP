@@ -43,6 +43,33 @@ class RsvpSubmissionTest extends TestCase
         });
     }
 
+    public function test_guest_not_attending_submission_sets_not_attending_status(): void
+    {
+        Mail::fake();
+
+        $this->post(route('rsvp.store'), [
+            'name' => 'Sorry Guest',
+            'phone' => '555-1112',
+            'email' => 'sorry@example.com',
+            'attendance' => 'not_attending',
+            'message' => 'Sorry, cannot make it',
+        ])
+            ->assertRedirect(route('rsvp.index'))
+            ->assertSessionHas('success', 'Sorry you cannot attend. We have recorded your response.');
+
+        $this->assertDatabaseHas('rsvps', [
+            'email' => 'sorry@example.com',
+            'attendance' => 'not_attending',
+            'status' => Rsvp::STATUS_NOT_ATTENDING,
+            'table_number' => null,
+            'check_in_token' => null,
+        ]);
+
+        Mail::assertSent(RsvpSubmittedMail::class, function (RsvpSubmittedMail $mail): bool {
+            return $mail->rsvp->email === 'sorry@example.com';
+        });
+    }
+
     public function test_rsvp_requires_email(): void
     {
         $this->get(route('rsvp.index'));

@@ -50,9 +50,12 @@ class RsvpSubmittedMail extends Mailable
     {
         return $this->renderedCache ??= (function (): array {
             $vars = MailTemplateRenderer::varsForSubmittedGuest($this->rsvp);
+            $slug = $this->rsvp->attendance === 'not_attending'
+                ? MailTemplate::SLUG_RSVP_NOT_ATTENDING_GUEST
+                : MailTemplate::SLUG_RSVP_SUBMITTED_GUEST;
 
             return MailTemplateRenderer::render(
-                MailTemplate::query()->where('slug', MailTemplate::SLUG_RSVP_SUBMITTED_GUEST)->firstOrFail(),
+                MailTemplate::query()->where('slug', $slug)->firstOrFail(),
                 $vars['html'],
                 $vars['text'],
             );

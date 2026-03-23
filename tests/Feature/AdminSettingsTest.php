@@ -25,6 +25,7 @@ class AdminSettingsTest extends TestCase
         $this->actingAs($admin)->get(route('admin.settings.edit'))
             ->assertOk()
             ->assertSee('Email content', false)
+            ->assertSee('Guest — Sorry you cannot attend', false)
             ->assertSee('SMS (Arkesel)', false)
             ->assertSee('Message text', false)
             ->assertSee('Guest list (RSVPs)', false)

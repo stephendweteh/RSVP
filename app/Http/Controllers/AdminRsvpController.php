@@ -23,7 +23,7 @@ class AdminRsvpController extends Controller
 
         $query = Rsvp::query()->orderByDesc('created_at');
 
-        if (in_array($status, ['pending', 'approved', 'rejected'], true)) {
+        if (in_array($status, ['pending', 'approved', 'rejected', 'not_attending'], true)) {
             $query->where('status', $status);
         }
 
@@ -38,7 +38,7 @@ class AdminRsvpController extends Controller
 
         $query = Rsvp::query()->orderByDesc('created_at');
 
-        if (in_array($status, ['pending', 'approved', 'rejected'], true)) {
+        if (in_array($status, ['pending', 'approved', 'rejected', 'not_attending'], true)) {
             $query->where('status', $status);
         }
 
@@ -77,6 +77,9 @@ class AdminRsvpController extends Controller
 
             if ($rsvp->status === Rsvp::STATUS_APPROVED) {
                 return ['kind' => 'noop'];
+            }
+            if ($rsvp->status === Rsvp::STATUS_NOT_ATTENDING) {
+                return ['kind' => 'not_attending'];
             }
 
             $usedNumbers = Rsvp::query()
@@ -122,6 +125,11 @@ class AdminRsvpController extends Controller
         if ($result['kind'] === 'noop') {
             return back()->with('success', 'RSVP is already approved.');
         }
+        if ($result['kind'] === 'not_attending') {
+            return back()->withErrors([
+                'rsvp' => 'This RSVP is marked as not attending and cannot be approved.',
+            ]);
+        }
 
         $this->notifyDecision($result['rsvp'], Rsvp::STATUS_APPROVED);
 
@@ -132,6 +140,9 @@ class AdminRsvpController extends Controller
     {
         $rsvp = DB::transaction(function () use ($id) {
             $rsvp = Rsvp::query()->lockForUpdate()->findOrFail($id);
+            if ($rsvp->status === Rsvp::STATUS_NOT_ATTENDING) {
+                return null;
+            }
             $rsvp->update([
                 'status' => Rsvp::STATUS_REJECTED,
                 'table_number' => null,
@@ -141,6 +152,12 @@ class AdminRsvpController extends Controller
 
             return $rsvp->fresh();
         });
+
+        if ($rsvp === null) {
+            return back()->withErrors([
+                'rsvp' => 'This RSVP is already marked as not attending.',
+            ]);
+        }
 
         $this->notifyDecision($rsvp, Rsvp::STATUS_REJECTED);
 

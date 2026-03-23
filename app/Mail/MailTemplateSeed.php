@@ -48,6 +48,33 @@ TEXT,
                 'sort_order' => 1,
             ],
             [
+                'slug' => 'rsvp_not_attending_guest',
+                'name' => 'Guest — Sorry you cannot attend',
+                'description' => 'Placeholders: {{guest_name}}, {{guests_count}}, {{attendance_label}}',
+                'subject' => 'Sorry you can’t attend',
+                'body_html' => <<<'HTML'
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #333;">
+    <p>Hi {{guest_name}},</p>
+    <p>We’re sorry you won’t be able to attend, but thank you for letting us know.</p>
+    <p style="color:#666;font-size:14px;">Attendance: {{attendance_label}}</p>
+</body>
+</html>
+HTML,
+                'body_text' => <<<'TEXT'
+Hi {{guest_name}},
+
+We’re sorry you won’t be able to attend, but thank you for letting us know.
+
+Attendance: {{attendance_label}}
+TEXT,
+                'sort_order' => 2,
+            ],
+            [
                 'slug' => 'rsvp_submitted_admin',
                 'name' => 'Admin — New RSVP (pending)',
                 'description' => 'Placeholders: {{guest_name}}, {{guest_email}}, {{guest_phone}}, {{guests_count}}, {{attendance_label}}, {{guest_message_section}} (HTML block or empty), {{guest_message_text}}',
@@ -84,7 +111,7 @@ Guests: {{guests_count}}{{guest_message_text}}
 
 Review RSVPs in the admin dashboard.
 TEXT,
-                'sort_order' => 2,
+                'sort_order' => 3,
             ],
             [
                 'slug' => 'rsvp_decision_guest_approved',
@@ -115,7 +142,7 @@ Your RSVP has been approved. We look forward to celebrating with you.
 {{calendar_links_text}}
 Summary: {{attendance_summary}}
 TEXT,
-                'sort_order' => 3,
+                'sort_order' => 4,
             ],
             [
                 'slug' => 'rsvp_decision_guest_rejected',
@@ -142,7 +169,7 @@ Your RSVP has been not approved at this time. If you have questions, please cont
 
 Summary: {{attendance_summary}}
 TEXT,
-                'sort_order' => 4,
+                'sort_order' => 5,
             ],
             [
                 'slug' => 'rsvp_decision_admin',
@@ -176,7 +203,7 @@ New status: {{status_label}}{{table_number_text}}
 
 The guest was sent an email with this update (if their address is on file).
 TEXT,
-                'sort_order' => 5,
+                'sort_order' => 6,
             ],
         ];
     }

@@ -25,6 +25,8 @@ class Rsvp extends Model
 
     public const STATUS_REJECTED = 'rejected';
 
+    public const STATUS_NOT_ATTENDING = 'not_attending';
+
     /** Maximum number of approved RSVPs (each gets a table number 1–this value). */
     public const APPROVED_CAPACITY = 100;
 

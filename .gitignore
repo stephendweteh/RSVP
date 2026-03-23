@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local cPanel export bundle (regenerate with scripts/export-check-in-qrcode-cpanel-zip.sh)
+/check-in-qrcode-cpanel-overwrite.zip

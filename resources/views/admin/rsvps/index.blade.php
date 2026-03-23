@@ -11,6 +11,7 @@
                 <a href="{{ route('admin.rsvps.index', ['status' => 'pending']) }}" class="btn btn-sm {{ $status === 'pending' ? 'btn-warning' : 'btn-outline-secondary' }}">Pending</a>
                 <a href="{{ route('admin.rsvps.index', ['status' => 'approved']) }}" class="btn btn-sm {{ $status === 'approved' ? 'btn-success' : 'btn-outline-secondary' }}">Approved</a>
                 <a href="{{ route('admin.rsvps.index', ['status' => 'rejected']) }}" class="btn btn-sm {{ $status === 'rejected' ? 'btn-danger' : 'btn-outline-secondary' }}">Rejected</a>
+                <a href="{{ route('admin.rsvps.index', ['status' => 'not_attending']) }}" class="btn btn-sm {{ $status === 'not_attending' ? 'btn-secondary' : 'btn-outline-secondary' }}">Not attending</a>
             </div>
             <a href="{{ route('admin.rsvps.export', array_filter(['status' => $status])) }}" class="btn btn-sm btn-outline-primary">Export CSV</a>
         </div>
@@ -44,6 +45,8 @@
                                 <span class="badge text-bg-warning">Pending</span>
                             @elseif ($rsvp->status === 'approved')
                                 <span class="badge text-bg-success">Approved</span>
+                            @elseif ($rsvp->status === 'not_attending')
+                                <span class="badge text-bg-secondary">Not attending</span>
                             @else
                                 <span class="badge text-bg-danger">Rejected</span>
                             @endif
@@ -59,7 +62,9 @@
                             @endif
                         </td>
                         <td class="text-end text-nowrap">
-                            @if ($rsvp->status === 'pending')
+                            @if ($rsvp->status === 'not_attending')
+                                <span class="text-muted">—</span>
+                            @elseif ($rsvp->status === 'pending')
                                 <form action="{{ route('admin.rsvps.approve', $rsvp->id) }}" method="post" class="d-inline">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-success">Approve</button>

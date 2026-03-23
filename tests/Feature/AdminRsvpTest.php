@@ -120,4 +120,23 @@ class AdminRsvpTest extends TestCase
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('CSV Guest', $response->streamedContent());
     }
+
+    public function test_admin_cannot_approve_not_attending_rsvp(): void
+    {
+        $admin = $this->makeAdmin();
+        $rsvp = $this->makeRsvp([
+            'attendance' => 'not_attending',
+            'status' => Rsvp::STATUS_NOT_ATTENDING,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.rsvps.approve', $rsvp->id))
+            ->assertSessionHasErrors('rsvp');
+
+        $this->assertDatabaseHas('rsvps', [
+            'id' => $rsvp->id,
+            'status' => Rsvp::STATUS_NOT_ATTENDING,
+            'table_number' => null,
+        ]);
+    }
 }

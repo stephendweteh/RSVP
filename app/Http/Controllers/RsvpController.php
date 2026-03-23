@@ -11,9 +11,11 @@ use App\Services\AdminNotificationRecipients;
 use App\Services\RsvpSmsNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 class RsvpController extends Controller
 {
@@ -29,12 +31,6 @@ class RsvpController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        if (Rsvp::isFullyBooked()) {
-            throw ValidationException::withMessages([
-                'rsvp' => ['RSVP fully booked. We are not accepting new submissions.'],
-            ]);
-        }
-
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:50'],
@@ -43,16 +39,27 @@ class RsvpController extends Controller
             'message' => ['nullable', 'string', 'max:5000'],
         ]);
 
+        if ($validated['attendance'] === 'attending' && Rsvp::isFullyBooked()) {
+            throw ValidationException::withMessages([
+                'rsvp' => ['RSVP fully booked. We are not accepting new submissions.'],
+            ]);
+        }
+
+        $isNotAttending = $validated['attendance'] === 'not_attending';
+
         $rsvp = Rsvp::query()->create([
             ...$validated,
             'guests_count' => 1,
-            'status' => Rsvp::STATUS_PENDING,
+            'status' => $isNotAttending ? Rsvp::STATUS_NOT_ATTENDING : Rsvp::STATUS_PENDING,
+            'table_number' => null,
+            'check_in_token' => null,
+            'checked_in_at' => null,
         ]);
 
-        Mail::to($rsvp->email)->send(new RsvpSubmittedMail($rsvp));
+        $this->sendMailSafely($rsvp->email, new RsvpSubmittedMail($rsvp), 'guest RSVP submission');
 
         foreach (AdminNotificationRecipients::notificationEmails() as $adminEmail) {
-            Mail::to($adminEmail)->send(new RsvpSubmittedAdminMail($rsvp));
+            $this->sendMailSafely($adminEmail, new RsvpSubmittedAdminMail($rsvp), 'admin RSVP submission notification');
         }
 
         RsvpSmsNotifier::guestSubmitted($rsvp);
@@ -60,6 +67,29 @@ class RsvpController extends Controller
 
         return redirect()
             ->route('rsvp.index')
-            ->with('success', 'Your RSVP is awaiting approval.');
+            ->with('success', $isNotAttending
+                ? 'Sorry you cannot attend. We have recorded your response.'
+                : 'Your RSVP is awaiting approval.');
+    }
+
+    /**
+     * Avoid failing RSVP submit when SMTP/network is temporarily broken.
+     */
+    private function sendMailSafely(?string $to, object $mailable, string $context): void
+    {
+        if (! filled($to)) {
+            return;
+        }
+
+        try {
+            Mail::to($to)->send($mailable);
+        } catch (Throwable $e) {
+            report($e);
+            Log::warning('RSVP mail send failed; continuing request.', [
+                'to' => $to,
+                'context' => $context,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('guests_count');
             $table->enum('attendance', ['attending', 'not_attending']);
             $table->text('message')->nullable();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'not_attending'])->default('pending');
             $table->timestamps();
         });
     }

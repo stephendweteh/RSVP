@@ -18,6 +18,8 @@ class MailTemplate extends Model
 {
     public const SLUG_RSVP_SUBMITTED_GUEST = 'rsvp_submitted_guest';
 
+    public const SLUG_RSVP_NOT_ATTENDING_GUEST = 'rsvp_not_attending_guest';
+
     public const SLUG_RSVP_SUBMITTED_ADMIN = 'rsvp_submitted_admin';
 
     public const SLUG_RSVP_DECISION_GUEST_APPROVED = 'rsvp_decision_guest_approved';
